@@ -162,10 +162,15 @@ elif page == "Gestione Segnalazioni":
                 lat, lon = float(coordinates[0].strip()), float(coordinates[1].strip())
                 heat_data.append([lat, lon])
 
+
         # Sidebar per selezionare il tipo di visualizzazione della mappa
         map_view = st.sidebar.radio(
             "Seleziona il tipo di visualizzazione della mappa",
             ["Heatmap", "Marker"])
+        
+        if st.sidebar.button("Reset DB"):
+            setup_db()
+
 
         # Crea la mappa con il centro sulla prima coordinata filtrata
         if heat_data:
@@ -191,5 +196,9 @@ elif page == "Gestione Segnalazioni":
     else:
         st.warning("Nessuna segnalazione disponibile per la mappa.")
 
-    # Mostra la tabella con i dati filtrati
-    st.dataframe(filtered_df)
+    # Rimuovere le colonne 'id', 'coordinates' e 'name' per la visualizzazione
+    columns_to_exclude = ['id', 'coordinates', 'name']
+    df_display = filtered_df.drop(columns=columns_to_exclude)
+
+    # Mostra la tabella con i dati filtrati, escludendo le colonne specificate
+    st.dataframe(df_display)

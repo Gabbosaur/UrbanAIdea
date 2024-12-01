@@ -31,7 +31,7 @@ def create_table():
             reporter_name TEXT,
             reporter_surname TEXT,
             reporter_email TEXT,
-            reporter_phone NUMERIC,
+            reporter_phone TEXT,
             PRIMARY KEY(id AUTOINCREMENT)
         )
     """)
