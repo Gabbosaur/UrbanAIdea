@@ -47,3 +47,24 @@ def get_coordinates_google(address):
     else:
         st.error(f"Unable to find coordinates for address: {address}")
         return None, None
+    
+
+def display_table(df):
+    # Drop the 'id' and 'coordinates' columns (they are retained in df, but not displayed)
+    df_display = df.drop(columns=["id", "coordinates", "name"])
+
+    # Display filters for each column dynamically (excluding 'id' and 'coordinates')
+    filters = {}
+    for column in df_display.columns:
+        unique_values = df_display[column].dropna().unique()
+        filter_widget = st.sidebar.selectbox(f"Filter by {column}",
+                                             ["All"] + list(unique_values))
+        filters[column] = filter_widget
+
+    # Apply the filters to the DataFrame
+    for column, filter_value in filters.items():
+        if filter_value != "All":
+            df_display = df_display[df_display[column] == filter_value]
+
+    # Return the filtered DataFrame for further use
+    return df[df.index.isin(df_display.index)]
