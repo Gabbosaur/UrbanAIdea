@@ -100,7 +100,7 @@ def get_all_reports():
 
 def display_table(df):
     # Drop the 'id' and 'coordinates' columns (they are retained in df, but not displayed)
-    df_display = df.drop(columns=["id", "coordinates"])
+    df_display = df.drop(columns=["id", "coordinates", "name"])
 
     # Display filters for each column dynamically (excluding 'id' and 'coordinates')
     filters = {}
@@ -118,3 +118,25 @@ def display_table(df):
 
     # Display the filtered DataFrame in Streamlit
     st.dataframe(df_display)
+
+
+
+    # Funzione per inserire i dati nel database
+
+def insert_data(data):
+    conn = sqlite3.connect("reports.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO report (reporter_name, reporter_surname, reporter_email, reporter_phone, address, description, coordinates)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        data.get("nome", ""),
+        data.get("cognome", ""),
+        data.get("email", ""),
+        data.get("cellulare", ""),
+        data.get("posizione", ""),
+        data.get("descrizione", ""),
+        data.get("coordinate", "")
+    ))
+    conn.commit()
+    conn.close()

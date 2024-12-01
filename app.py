@@ -131,6 +131,11 @@ elif page == "Segnalazione":
                     file_name="segnalazione.json",
                     mime="application/json",
                 )
+                lat, lon = get_coordinates_google(st.session_state.user_data['posizione'])
+                st.session_state.user_data.update({
+                    "coordinate": f"{lat}, {lon}"
+                })
+                insert_data(st.session_state.user_data)
                 st.success("Segnalazione inviata con successo!")
                 if st.button("Nuova Segnalazione"):
                     st.session_state.step = 1
@@ -154,11 +159,16 @@ elif page == "Gestione Segnalazioni":
     # Prepara i dati per la HeatMap (le coordinate di tutti i report)
     heat_data = []
     for index, row in df.iterrows():
-        coordinates = row['coordinates'].split(',')
-        lat, lon = float(coordinates[0].strip()), float(
-            coordinates[1].strip())  # Converti in float per lat e lon
-        heat_data.append(
-            [lat, lon])  # Aggiungi le coordinate alla lista per la HeatMap
+        if row['coordinates']:
+            coordinates = row['coordinates'].split(',')
+        else:
+            coordinates = None  
+
+        if coordinates:
+            lat, lon = float(coordinates[0].strip()), float(
+                coordinates[1].strip())  # Converti in float per lat e lon
+            heat_data.append(
+                [lat, lon])  # Aggiungi le coordinate alla lista per la HeatMap
 
     # Sidebar per selezionare il tipo di visualizzazione della mappa
     map_view = st.sidebar.radio(
@@ -175,15 +185,19 @@ elif page == "Gestione Segnalazioni":
     elif map_view == "Marker":
         # Aggiungi i marker per ogni segnalazione nel database
         for index, row in df.iterrows():
-            coordinates = row['coordinates'].split(',')
-            lat, lon = float(coordinates[0].strip()), float(
-                coordinates[1].strip())  # Converti in float per lat e lon
+            if row['coordinates']:
+                coordinates = row['coordinates'].split(',')
+            else:
+                coordinates = None  
+            if coordinates:
+                lat, lon = float(coordinates[0].strip()), float(
+                    coordinates[1].strip())  # Converti in float per lat e lon
 
-            # Aggiungi un marker sulla mappa
-            folium.Marker(
-                location=[lat, lon],
-                popup=f"Segnalazione: {row['name']}\n{row['description']}",
-                tooltip=row['name']).add_to(m)
+                # Aggiungi un marker sulla mappa
+                folium.Marker(
+                    location=[lat, lon],
+                    popup=f"Segnalazione: {row['name']}\n{row['description']}",
+                    tooltip=row['name']).add_to(m)
 
     # Rendi visibile la mappa in Streamlit
     st_folium(m, width=800, height=500)

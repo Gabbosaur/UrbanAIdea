@@ -1,5 +1,7 @@
 import streamlit as st
+import googlemaps
 import re
+import os
 
 def next_step():
     st.session_state.step += 1
@@ -31,3 +33,17 @@ def generate_labels(description):
     description_lower = description.lower()
     labels = [label for keyword, label in keywords.items() if keyword in description_lower]
     return labels if labels else ["Indefinito"]
+
+
+
+# Function to convert address to coordinates using Google Maps API
+def get_coordinates_google(address):
+    gmaps = googlemaps.Client(key=os.environ.get("GOOGLE_MAPS_API_KEY"))
+    geocode_result = gmaps.geocode(address)
+    if geocode_result:
+        lat = geocode_result[0]["geometry"]["location"]["lat"]
+        lon = geocode_result[0]["geometry"]["location"]["lng"]
+        return lat, lon
+    else:
+        st.error(f"Unable to find coordinates for address: {address}")
+        return None, None
