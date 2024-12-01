@@ -144,13 +144,13 @@ elif page == "Segnalazione":
 
 # Pagina "Gestione Segnalazioni"
 elif page == "Gestione Segnalazioni":
-    st.title("📄 Gestione segnalazioni su UrbanAIdea")
+    st.title("📄 Gestione segnalazioni")
 
     # Estrai i dati dal database
     df = get_all_reports()
 
-    # Filtra i dati usando la funzione display_table
-    filtered_df = display_table(df)
+    # Filtra i dati usando la funzione extract_filters
+    filtered_df = extract_filters(df)
 
     # Controlla se ci sono coordinate nei dati filtrati
     if not filtered_df.empty and "coordinates" in filtered_df.columns:
