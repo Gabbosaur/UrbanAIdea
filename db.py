@@ -31,7 +31,7 @@ def create_table():
             reporter_name TEXT,
             reporter_surname TEXT,
             reporter_email TEXT,
-            reporter_phone NUMERIC,
+            reporter_phone TEXT,
             PRIMARY KEY(id AUTOINCREMENT)
         )
     """)
@@ -98,23 +98,25 @@ def get_all_reports():
     return df
 
 
-def display_table(df):
-    # Drop the 'id' and 'coordinates' columns (they are retained in df, but not displayed)
-    df_display = df.drop(columns=["id", "coordinates"])
 
-    # Display filters for each column dynamically (excluding 'id' and 'coordinates')
-    filters = {}
-    for column in df_display.columns:
-        unique_values = df_display[column].dropna().unique(
-        )  # Get unique values for each column
-        filter_widget = st.sidebar.selectbox(f"Filter by {column}",
-                                             ["All"] + list(unique_values))
-        filters[column] = filter_widget
 
-    # Apply the filters to the DataFrame
-    for column, filter_value in filters.items():
-        if filter_value != "All":
-            df_display = df_display[df_display[column] == filter_value]
+    # Funzione per inserire i dati nel database
 
-    # Display the filtered DataFrame in Streamlit
-    st.dataframe(df_display)
+def insert_data(data):
+    conn = sqlite3.connect("reports.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO report (reporter_name, reporter_surname, reporter_email, reporter_phone, address, description, coordinates, tag)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        data.get("nome", ""),
+        data.get("cognome", ""),
+        data.get("email", ""),
+        data.get("cellulare", ""),
+        data.get("posizione", ""),
+        data.get("descrizione", ""),
+        data.get("coordinate", ""),
+        data.get("tag", "")
+    ))
+    conn.commit()
+    conn.close()

@@ -139,62 +139,74 @@ elif page == "Segnalazione":
                     file_name="segnalazione.json",
                     mime="application/json",
                 )
+                lat, lon = get_coordinates_google(st.session_state.user_data['posizione'])
+                st.session_state.user_data.update({
+                    "coordinate": f"{lat}, {lon}"
+                })
+                insert_data(st.session_state.user_data)
                 st.success("Segnalazione inviata con successo!")
                 if st.button("Nuova Segnalazione"):
                     st.session_state.step = 1
                     st.session_state.user_data = {}
                     st.rerun()
 
+# Pagina "Gestione Segnalazioni"
 elif page == "Gestione Segnalazioni":
-    st.title("🗺️ Mappa segnalazioni su UrbanAIdea")
+    st.title("🗺️ Mappa segnalazioni")
 
     # Estrai i dati dal database
     df = get_all_reports()
 
-    # Get the first report's coordinates (or choose any other logic you prefer)
-    first_report_coords = df.iloc[0]['coordinates'].split(',')
-    lat, lon = float(first_report_coords[0].strip()), float(
-        first_report_coords[1].strip())
+    # Filtra i dati usando la funzione extract_filters
+    filtered_df = extract_filters(df)
 
-    # Crea una mappa Folium con il centro sulle coordinate del primo report
-    m = folium.Map(location=[lat, lon], zoom_start=12)
+    # Controlla se ci sono coordinate nei dati filtrati
+    if not filtered_df.empty and "coordinates" in filtered_df.columns:
+        # Prepara i dati per la mappa (heatmap e marker)
+        heat_data = []
+        for _, row in filtered_df.iterrows():
+            if row['coordinates']:
+                coordinates = row['coordinates'].split(',')
+                lat, lon = float(coordinates[0].strip()), float(coordinates[1].strip())
+                heat_data.append([lat, lon])
 
-    # Prepara i dati per la HeatMap (le coordinate di tutti i report)
-    heat_data = []
-    for index, row in df.iterrows():
-        coordinates = row['coordinates'].split(',')
-        lat, lon = float(coordinates[0].strip()), float(
-            coordinates[1].strip())  # Converti in float per lat e lon
-        heat_data.append(
-            [lat, lon])  # Aggiungi le coordinate alla lista per la HeatMap
 
-    # Sidebar per selezionare il tipo di visualizzazione della mappa
-    map_view = st.sidebar.radio(
-        "Seleziona il tipo di visualizzazione della mappa",
-        ["Heatmap", "Marker"])
+        # Sidebar per selezionare il tipo di visualizzazione della mappa
+        map_view = st.sidebar.radio(
+            "Seleziona il tipo di visualizzazione della mappa",
+            ["Heatmap", "Marker"])
+        
+        if st.sidebar.button("Reset DB"):
+            setup_db()
 
-    # Setup del database (opzionale)
-    if st.sidebar.button("Setup DB"):
-        setup_db()
 
-    if map_view == "Heatmap":
-        # Aggiungi la HeatMap sulla mappa
-        HeatMap(heat_data).add_to(m)
-    elif map_view == "Marker":
-        # Aggiungi i marker per ogni segnalazione nel database
-        for index, row in df.iterrows():
-            coordinates = row['coordinates'].split(',')
-            lat, lon = float(coordinates[0].strip()), float(
-                coordinates[1].strip())  # Converti in float per lat e lon
+        # Crea la mappa con il centro sulla prima coordinata filtrata
+        if heat_data:
+            lat, lon = heat_data[0]
+            m = folium.Map(location=[lat, lon], zoom_start=12)
 
-            # Aggiungi un marker sulla mappa
-            folium.Marker(
-                location=[lat, lon],
-                popup=f"Segnalazione: {row['name']}\n{row['description']}",
-                tooltip=row['name']).add_to(m)
+            if map_view == "Heatmap":
+                HeatMap(heat_data).add_to(m)
+            elif map_view == "Marker":
+                for _, row in filtered_df.iterrows():
+                    if row['coordinates']:
+                        coordinates = row['coordinates'].split(',')
+                        lat, lon = float(coordinates[0].strip()), float(coordinates[1].strip())
+                        folium.Marker(
+                            location=[lat, lon],
+                            popup=f"Segnalazione: {row['name']}\n{row['description']}",
+                            tooltip=row['name']).add_to(m)
 
-    # Rendi visibile la mappa in Streamlit
-    st_folium(m, width=800, height=500)
+            # Rendi visibile la mappa in Streamlit sopra la tabella
+            st_folium(m, width=800, height=500)
+        else:
+            st.warning("Nessuna segnalazione corrisponde ai filtri applicati.")
+    else:
+        st.warning("Nessuna segnalazione disponibile per la mappa.")
 
-    # Mostra la tabella con le segnalazioni
-    display_table(df)
+    # Rimuovere le colonne 'id', 'coordinates' e 'name' per la visualizzazione
+    columns_to_exclude = ['id', 'coordinates', 'name']
+    df_display = filtered_df.drop(columns=columns_to_exclude)
+
+    # Mostra la tabella con i dati filtrati, escludendo le colonne specificate
+    st.dataframe(df_display)
