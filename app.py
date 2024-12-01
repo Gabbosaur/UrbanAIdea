@@ -4,6 +4,7 @@ from utils import *
 from ai import enhance_text_with_ai
 from db import *
 import folium
+from streamlit_tags import st_tags
 from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
@@ -29,7 +30,7 @@ if page == "Informazioni":
              caption="Smart City powered by AI")
     st.write("Per tornare all'applicazione principale, usa la barra laterale.")
 elif page == "Segnalazione":
-    st.title("📄 Segnalazione")
+    st.title("⚠️ Segnalazione")
     steps = ["Dati Utente", "Segnalazione Problema", "Riepilogo"]
     st.progress((st.session_state.step - 1) / (len(steps) - 1))
     st.subheader(
@@ -77,11 +78,21 @@ elif page == "Segnalazione":
         descrizione = st.text_area("Descrizione del problema",
                                    st.session_state.user_data['descrizione'])
 
-        # Bottone per convertire in maiuscolo
+        # Bottone per migliorare con l'AI
         if st.button("✨ Migliora con l'AI"):
-            st.session_state.user_data['descrizione'] = enhance_text_with_ai(
-                descrizione)
+            response_text, generated_tags = enhance_text_with_ai(descrizione)
+            st.session_state.user_data['descrizione'] = response_text
+            st.session_state.user_data['labels'] = generated_tags
             st.rerun()  # Aggiorna l'interfaccia immediatamente
+
+        # Mostra i tags generati, se presenti
+        if 'labels' in st.session_state.user_data:
+            tags = st.session_state.user_data['labels'].strip("[]")
+            keywords = st_tags(label='Tags generati:',
+                            text='Press enter to add more',
+                            value=tags.split(","),
+                            maxtags=4,
+                            key='1')
 
         col1, col2 = st.columns(2)
         with col1:
@@ -106,13 +117,10 @@ elif page == "Segnalazione":
 
     # Step 3: Riepilogo
     elif st.session_state.step == 3:
-        labels = generate_labels(st.session_state.user_data['descrizione'])
-        st.session_state.user_data['labels'] = labels
+        labels = st.session_state.user_data['labels']
 
         st.write("### Dati Utente")
         st.write(st.session_state.user_data)
-        st.write("### Segnalazione")
-        st.write(f"Etichette: {', '.join(labels)}")
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -138,7 +146,7 @@ elif page == "Segnalazione":
                     st.rerun()
 
 elif page == "Gestione Segnalazioni":
-    st.title("📄 Gestione segnalazioni su UrbanAIdea")
+    st.title("🗺️ Mappa segnalazioni su UrbanAIdea")
 
     # Estrai i dati dal database
     df = get_all_reports()

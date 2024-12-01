@@ -1,6 +1,7 @@
 import os
 from groq import Groq
 from dotenv import load_dotenv
+from utils import split_message_and_tags
 
 load_dotenv()
 
@@ -29,5 +30,6 @@ def enhance_text_with_ai(description):
             }
         ],
         model="llama-3.1-8b-instant",
+        stream=False
     )
-    return chat_completion.choices[0].message.content
+    return split_message_and_tags(chat_completion.choices[0].message.content)
