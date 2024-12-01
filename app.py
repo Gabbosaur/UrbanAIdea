@@ -26,9 +26,9 @@ if page == "Informazioni":
     UrbanAIdea è un'iniziativa innovativa che utilizza l'intelligenza artificiale 
     per migliorare la gestione delle segnalazioni urbane.
     """)
-    st.image("https://via.placeholder.com/800x400",
-             caption="Smart City powered by AI")
-    st.write("Per tornare all'applicazione principale, usa la barra laterale.")
+    st.image("./img/11.jpg",
+             caption="Segnalazioni dagli utenti")
+    st.write("Usa la barra laterale per proseguire.")
 elif page == "Segnalazione":
     st.title("⚠️ Segnalazione")
     steps = ["Dati Utente", "Segnalazione Problema", "Riepilogo"]
