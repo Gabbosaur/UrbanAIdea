@@ -127,8 +127,8 @@ def insert_data(data):
     conn = sqlite3.connect("reports.db")
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO report (reporter_name, reporter_surname, reporter_email, reporter_phone, address, description, coordinates)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO report (reporter_name, reporter_surname, reporter_email, reporter_phone, address, description, coordinates, tag)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         data.get("nome", ""),
         data.get("cognome", ""),
@@ -136,7 +136,8 @@ def insert_data(data):
         data.get("cellulare", ""),
         data.get("posizione", ""),
         data.get("descrizione", ""),
-        data.get("coordinate", "")
+        data.get("coordinate", ""),
+        data.get("tag", "")
     ))
     conn.commit()
     conn.close()
