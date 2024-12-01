@@ -23,23 +23,23 @@ def validate_phone(phone):
     return re.match(pattern, phone) is not None
 
 
-def generate_labels(description):
-    # Dizionario di parole chiave e relative etichette
-    keywords = {
-        'strada': 'Problema stradale',
-        'illuminazione': 'Problema di illuminazione',
-        'rifiuti': 'Problema di rifiuti',
-        'parco': 'Problema in area verde',
-        'edificio': 'Problema strutturale',
-        'rumore': 'Inquinamento acustico',
-        'acqua': 'Problema idrico'
-    }
-    description_lower = description.lower()
-    labels = [
-        label for keyword, label in keywords.items()
-        if keyword in description_lower
-    ]
-    return labels if labels else ["indefinito"]
+# def generate_labels(description):
+#     # Dizionario di parole chiave e relative etichette
+#     keywords = {
+#         'strada': 'Problema stradale',
+#         'illuminazione': 'Problema di illuminazione',
+#         'rifiuti': 'Problema di rifiuti',
+#         'parco': 'Problema in area verde',
+#         'edificio': 'Problema strutturale',
+#         'rumore': 'Inquinamento acustico',
+#         'acqua': 'Problema idrico'
+#     }
+#     description_lower = description.lower()
+#     labels = [
+#         label for keyword, label in keywords.items()
+#         if keyword in description_lower
+#     ]
+#     return labels if labels else ["indefinito"]
 
 
 def split_message_and_tags(text):
@@ -65,8 +65,7 @@ def split_message_and_tags(text):
         tags = ""  # Nessun tag trovato
 
     return message, tags
-    labels = [label for keyword, label in keywords.items() if keyword in description_lower]
-    return labels if labels else ["Indefinito"]
+
 
 
 
